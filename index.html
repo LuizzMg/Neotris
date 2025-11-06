@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Neotris </title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" /> <!-- Pede ao navegador que se conecte rápido ao servidor do Google Fonts. -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> <!-- Faz o mesmo que o anterior, para agilizar -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" /> <!-- Importa a fonte “Press Start 2P” do Google Fonts -->
+    
+    <link rel="stylesheet" href="styles.css" /> <!-- Referência o aquivo .css -->
+    <script defer src="script.js"></script> <!-- Rederência o arquivo .js-->
+  </head>
+  
+  <body>
+   <div class="container"> <!-- Cria um contêiner que vai agrupar todas as colunas do jogo. -->
+   <button id="config"></button>
+   <button id="pause-button"></button>
+   
+   
+  <!-- Coluna da esquerda: NEXT -->
+  <div class="coluna-esquerda"> <!-- Inicia a coluna da esquerda -->
+    <h3 id="next">NEXT</h3> <!-- Título com o texto “NEXT”. -->
+    <canvas id="next-preview" width="200" height="200"></canvas> <!-- Área  onde o jogo vai mostrar o próximo bloco e -->
+     <div id="start-screen">
+        <button id="start-button"> INICIAR </button>
+        <div id="timer-display">00:00</div>
+    </div>
+    
+    <div id="high-score-display">Recorde: --- (0)</div>
+
+<input type="text" id="player-name-input" placeholder="Digite seu nome..." maxlength="15">
+  </div> <!-- Fecha a coluna da esquerda. -->
+
+  <!-- Coluna central: JOGO + campo Tetris -->
+  <div class="coluna-central"> <!-- Inicia a coluna do meio, que contém o campo de Tetris. -->
+    <h3 id="jogo">JOGO</h3> <!-- Título “SCORE”. -->
+    <canvas id="tetris-field" width="300" height="600"></canvas> <!-- Área onde o Tetris vai ocorrer. -->
+  </div> <!-- Fecha a coluna central. -->
+
+  <!-- Coluna da direita: SCORE -->
+  <div class="coluna-direita"> <!-- Inicia a coluna da direita, que vai exibir a pontuação. -->
+    <h3 id="score">SCORE</h3>
+    <canvas id="score-preview" width="200" height="200"></canvas> <!-- Área para mostrar a pontuação. -->
+    
+     <img 
+    src="https://i.imgur.com/5DG1zPY.png"
+    alt="Logo Neotris"
+    
+    
+    id="neotris-logo" > <!-- Insere a imagem do logo, com url, texto alternativo e um id para o estilo. -->
+  
+  <audio id="game-music" src="https://cdn.pixabay.com/audio/2025/09/02/audio_769e786b5e.mp3" loop></audio>
+  </div>
+  
+  <dialog id="instrucoes">
+      <h2>INSTRUÇÕES</h2>
+      
+      <p>Bem-vindo ao <strong>NEOTRIS</strong>!</p>
+      <p>Complete linhas horizontais para marcar pontos e impedir que as peças cheguem ao topo.</p>
+      
+      <p style="color: #ffff00;">
+        <strong>IMPORTANTE:</strong> Digite seu nome antes de iniciar. Ele é <strong>obrigatório</strong> e será salvo com seu recorde e tempo!
+      </p>
+
+      <p class="controls-list">
+          <strong>CONTROLES:</strong><br>
+          <strong>SETA ESQUERDA:</strong> Mover Esquerda<br>
+          <strong>SETA DIREITA:</strong> Mover Direita<br>
+          <strong>SETA BAIXO:</strong> Descer Rápido<br>
+          <strong>SETA CIMA / W:</strong> Girar (Horário)<br>
+          <strong>Q:</strong> Girar (Anti-horário)<br>
+          <strong>P:</strong> Pausar / Continuar
+      </p>
+      <button class="close-button" id="close">ENTENDIDO!</button>
+      
+      <div class="credits-pause">
+          <p>Projeto por:</p>
+            <a href="https://github.com/LuizzMg" target="_blank">Luiz Miguel</a>
+          <a href="https://github.com/Esteves3012" target="_blank">Pedro Henrique Esteves</a>
+          <a href="https://github.com/guiizjnxx" target="_blank">Guilherme Henrique</a>
+      </div>
+      <button class="close-button" id="close">ENTENDIDO!</button>
+  </dialog>
+  
+   <dialog id="configuracoes">
+     <h2>AJUSTE DE VOLUME</h2>   
+    <div class="volume-controls">
+    <button id="mute-button"></button>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.3">
+     <button class="close-button" id="config-close-button"> Close </button>
+     <div class="credits-pause">
+          <p>Projeto por:</p>
+          <a href="https://github.com/LuizzMg" target="_blank">Luiz Miguel</a>
+          <a href="https://github.com/Esteves3012" target="_blank">Pedro Henrique Esteves</a>
+          <a href="https://github.com/guiizjnxx" target="_blank">Guilherme Henrique</a>
+      </div>
+  </div>
+  </dialog>
+  
+  <dialog id="pause-menu">
+    <h2>PAUSED</h2>
+    <button id="resume-button">RESUME</button>
+    </dialog>
+
+
+<dialog id="game-over-menu">
+    <h2>Fim de Jogo!</h2>
+    <p>Infelizmente, você perdeu.</p>
+    <button id="restart-button" class="menu-button">
+        Recomeçar
+    </button>
+</dialog>
