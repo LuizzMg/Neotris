@@ -331,40 +331,30 @@ function spawnPiece() {
 
 function drawMatrix(matrix, offset, context) {
     if (!context) return;
+
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                // Se for a peça 'A' (valor 9) E a imagem foi carregada com sucesso
+                
+                // 1. Defina as propriedades de Sombra (Neon) ANTES de desenhar
+                context.shadowColor = COLORS[value];
+                context.shadowBlur = 20;
+
+                // 2. Agora, desenhe o bloco (imagem ou cor)
                 if (value === 9 && arasakaPatternImage.complete && arasakaPatternImage.naturalWidth > 0) {
-                    // Desenha a imagem diretamente
-                    // Argumentos: imagem, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
-                    // Aqui, (x + offset.x) e (y + offset.y) já estão na escala do BLOCK_SIZE
+                    // Desenha a imagem (ela agora terá a sombra/neon)
                     context.drawImage(
                         arasakaPatternImage,
-                        0, 0, arasakaPatternImage.naturalWidth, arasakaPatternImage.naturalHeight, // Source (toda a imagem)
-                        x + offset.x, y + offset.y, 1, 1 // Destination (um bloco de 1x1 na escala do canvas)
+                        0, 0, arasakaPatternImage.naturalWidth, arasakaPatternImage.naturalHeight,
+                        x + offset.x, y + offset.y, 1, 1
                     );
                 } else {
-                    // Desenha a cor sólida padrão
+                    // Desenha a cor sólida (ela agora terá a sombra/neon)
                     context.fillStyle = COLORS[value];
                     context.fillRect(x + offset.x, y + offset.y, 1, 1);
                 }
                 
-                // Desenha a sombra (se você ainda quiser a sombra com a cor original)
-                context.shadowColor = COLORS[value]; 
-                context.shadowBlur = 20;
-                // Para a sombra, desenhamos um pequeno retângulo por cima da imagem ou cor
-                // Isso garante que a sombra apareça sobre o conteúdo do bloco
-                // Se não quiser sombra em blocos de imagem, remova este if/else
-                if (value === 9 && arasakaPatternImage.complete && arasakaPatternImage.naturalWidth > 0) {
-                    context.fillStyle = 'rgba(0,0,0,0.1)'; // Uma cor escura semi-transparente para a sombra
-                    context.fillRect(x + offset.x, y + offset.y, 1, 1);
-                } else {
-                    // Para blocos de cor, a sombra já é desenhada pelo fillRect principal.
-                    // Podemos redesenhar para garantir, mas o fillRect de cima já faz isso.
-                    // Removendo para evitar sobreposição desnecessária, a menos que a sombra seja um efeito separado
-                }
-
+                // 3. Limpe as sombras para que o próximo desenho no loop não afete outros elementos
                 context.shadowBlur = 0;
                 context.shadowColor = 'transparent';
             }
