@@ -1,0 +1,590 @@
+@font-face { /* importa uma fonte personalizada ao projeto. */
+  font-family: 'MinhaFonte'; /* Define o nome da fonte, que será usado no font-family depois. */
+  src: url('https://fonts.google.com/share?selection.family=Press+Start+2P') format('woff2'), /* Especifica de onde virá a fonte no formato woff2 */
+       url('https://fonts.google.com/share?selection.family=Press+Start+2P') format('woff'); /* Inclui no formato woff, caso o navegador não aceitar woff2 */
+  font-weight: normal; /* Espessura padrão */
+  font-style: normal; /* Estilo de fonte padrão */
+}
+
+*{ /* Vai aplicar esse estilo a todos os elementos da página */
+  margin: 5px; /* Margen externa ao elemento HTML */
+  padding: 5px; /* Margen interna ao elemento HTML */
+  box-sizing: border-box;
+}
+
+body{
+  background-image: url('https://i.imgur.com/5fWu3cb.png'); /* Define uma imagem de fundo para toda a página. */
+  min-height: 100vh; /* Ocupa a altura total da tela */
+  display: flex; /* Ativa o flexbox permite arranjar os elementos internos */
+  align-items: center; /* Centralizar verticalemtne */
+  justify-content: center; /* Centralizar horizontalmente */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.container { /* Inicia a estilização do elemento container. */
+  display: flex; /* Ativa o flexbox permite arranjar os elementos internos */
+  justify-content: center; /* Centralizar horizontalmente */
+  align-items: flex-start; /* Centralizar */
+}
+
+.coluna-esquerda, /* Seleciona a coluna da esquerda */
+.coluna-central, /* Seleciona a coluna central */
+.coluna-direita { /* Seleciona a coluna da direita */
+  display: flex;
+  flex-direction: column; /* Os itens dentro das colunas ficam empilhados de cima para baixo. */
+  align-items: center; /* Centraliza os itens horizontalmente */
+}
+
+#jogo, /* Seleciona o título "JOGO". */
+#next, /* Seleciona o título "NEXT". */
+#score { /* Seleciona o título "SCORE". */
+  font-family: 'Press Start 2P', sans-serif; /* Usa a fonte importada. */
+  font-size: 2.5rem; /* Define o tamanho do texto para 2,5. */
+  background: linear-gradient(45deg, #ff00ff, #00ffff); /* Cria um degradê de magenta e ciano no texto. */
+  -webkit-background-clip: text; /* Limita o degradê apenas ao texto. */
+  -webkit-text-fill-color: transparent; /* Muda a cor do texto para transparente para mostrar o degradê. */
+  color: transparent; /* Garante que o texto fique invisível sem o degradê. */
+  margin-bottom: 20px; /* Cria 20 pixels abaixo do texto */
+  text-align: center; /* Centraliza o texto dentro do bloco */
+}
+
+#tetris-field { /* Inicia a estilização do campo do neotris */
+  background: #000; /* Define o fundo preto */
+  border: 4px solid transparent; /* Cria uma borda de 4 pixels que fica invisível. */
+  border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1; /* Usa o mesmo degradê do texto para as bordas */
+  border-radius: 6px; /* Arredonda as bordas do campo */
+  box-shadow: /* Inicia a configuração de sombra para dar profundidade */
+    inset 0 0 8px rgba(255, 0, 255, 0.6), /* Sombra interna magenta suave. */
+    inset 0 0 12px rgba(0, 255, 255, 0.6), /* Sombra interna ciano suave. */
+    0 0 16px rgba(255, 0, 255, 0.4), /* Sombra externa magenta maior. */
+    0 0 24px rgba(0, 255, 255, 0.3); /* Sombra externa ciano ainda maior. */
+}
+
+#next-preview { /* Começa a estilização do NEXT. */
+  background: #000; /* Define o fundo preto */
+  border: 4px solid transparent; /* Adiciona uma borda invisível de 4 pixels. */
+  border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1; /* Adiciona a borda degradê do campo do neotris. */
+  border-radius: 4px; /* Cantos mais arredondados. */
+  box-shadow: /* Inicia a configuração das sombras */
+    inset 0 0 8px rgba(255, 0, 255, 0.6), /* Sombra interna magenta suave. */
+    inset 0 0 12px rgba(0, 255, 255, 0.6), /* Sombra interna ciano suave. */
+    0 0 16px rgba(255, 0, 255, 0.4), /* Sombra externa magenta maior. */
+    0 0 24px rgba(0, 255, 255, 0.3); /* Sombra externa ciano ainda maior. */
+}
+
+#neotris-logo { /* Inicia a estilização da logo. */
+  width: 380px; /* Define a largura da logo em 300 pixels. */
+}
+
+#score-preview { /* Inicia a estilização do SCORE. */
+  background: #000;
+  border: 4px solid transparent;
+  border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 8px rgba(255, 0, 255, 0.6),
+    inset 0 0 12px rgba(0, 255, 255, 0.6),
+    0 0 16px rgba(255, 0, 255, 0.4),
+    0 0 24px rgba(0, 255, 255, 0.3);
+}
+
+#start-button-container {
+    /* Centraliza o botão dentro do seu espaço na barra lateral */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 500px; /* Espaçamento entre o NEXT e o botão */
+}
+
+#start-button {
+    background-image: url(https://i.imgur.com/Nt2mZWy.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 310px;
+    height: 110px;
+    border: none;
+    background-color: transparent;
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    
+    color: #ffffff;
+    text-shadow:
+        0 0 4px #fff,
+        0 0 10px #ff00ff,
+        0 0 15px #00ffff;
+    
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#start-button:hover {
+    transform: scale(1.02);
+    filter: brightness(0.8);
+}
+
+#timer-display {
+    display: none;
+
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 2.2rem;
+    
+    color: #ffffff;
+    text-shadow:
+        0 0 4px #fff,
+        0 0 10px #ff00ff,
+        0 0 15px #00ffff;
+    
+    width: 310px;
+    height: 110px;
+    
+    justify-content: center;
+    align-items: center;
+    
+    margin-bottom: 20px;
+}
+
+/* --- ESTILOS DOS POP-UPS (AGRUPADOS) --- */
+#instrucoes,
+#configuracoes,
+#pause-menu,
+#game-over-menu { 
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  margin: auto;
+  overflow-y: auto;
+
+  background: #000;
+  color: #fff;
+  font-family: 'Press Start 2P', sans-serif;
+  padding: 25px;
+  border-radius: 6px;
+
+  border: 4px solid transparent;
+  border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1; /* Borda neon padrão */
+  
+  box-shadow:
+    inset 0 0 8px rgba(255, 0, 255, 0.6),
+    inset 0 0 12px rgba(0, 255, 255, 0.6),
+    0 0 16px rgba(255, 0, 255, 0.4),
+    0 0 24px rgba(0, 255, 255, 0.3);
+}
+
+/* Fundo escuro para TODOS os pop-ups */
+#instrucoes::backdrop,
+#configuracoes::backdrop,
+#pause-menu::backdrop,
+#game-over-menu::backdrop { 
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+/* Títulos para TODOS os pop-ups */
+#instrucoes h2,
+#configuracoes h2,
+#pause-menu h2,
+#game-over-menu h2 { 
+  font-family: 'Press Start 2P', sans-serif;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 25px;
+  
+  
+  background: linear-gradient(45deg, #ff00ff, #00ffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Parágrafos para TODOS os pop-ups (incluindo o de pausa para consistência) */
+#instrucoes p,
+#configuracoes p,
+#pause-menu p,
+#game-over-menu p { 
+  font-family: 'Press Start 2P', sans-serif;
+  font-size: 0.85rem;
+  color: #ffffff;
+    text-shadow:
+        0 0 4px #fff,
+        0 0 10px #ff00ff,
+        0 0 15px #00ffff;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
+
+/* Imagens para os pop-ups de instrução e configuração */
+#instrucoes img,
+#configuracoes img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+  margin: 10px auto 20px;
+}
+
+
+/* --- BOTÕES DE FECHAR E RESUME (AGRUPADOS) --- */
+#close,
+#config-close-button,
+#resume-button,
+#restart-button { 
+  font-family: 'Press Start 2P', sans-serif;
+  font-size: 1rem;
+  background: linear-gradient(45deg, #ff00ff, #00ffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  
+  /* Borda neon padrão AQUI */
+  border: 4px solid transparent; /* Torna a borda 'invisível' para que border-image apareça */
+  border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1; /* A borda neon aparece SEMPRE */
+
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+  width: 100%;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 4px rgba(0, 255, 170, 0.5); /* Sombra inicial suave no texto */
+}
+
+#close:hover,
+#config-close-button:hover,
+#resume-button:hover,
+#restart-button:hover {
+  -webkit-background-clip: padding-box; /* Aplica ao fundo, não ao texto */
+  -webkit-text-fill-color: initial; /* Reseta o preenchimento */
+  color: #000; /* Texto fica preto para contrastar com o gradiente claro */
+  text-shadow: none; /* Remove a sombra do texto no hover */
+  
+  /* Sombra externa para o efeito de brilho no hover */
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 
+              0 0 15px rgba(0, 255, 255, 0.5),
+              0 0 20px rgba(255, 0, 255, 0.3),
+              0 0 25px rgba(0, 255, 255, 0.3);
+  
+  /* A borda já é transparente devido ao border-image, então não precisa mudar */
+  border: 4px solid transparent; /* Mantém a consistência */
+}
+
+
+/* --- Barras de Rolagem Neon (AGRUPADAS) --- */
+#instrucoes::-webkit-scrollbar,
+#configuracoes::-webkit-scrollbar,
+#pause-menu::-webkit-scrollbar,
+#game-over-menu::-webkit-scrollbar { 
+  width: 8px;
+}
+#instrucoes::-webkit-scrollbar-track,
+#configuracoes::-webkit-scrollbar-track,
+#pause-menu::-webkit-scrollbar-track,
+#game-over-menu::-webkit-scrollbar-track { 
+  background: #001A26; /* Fundo escuro */
+  border-radius: 4px;
+}
+#instrucoes::-webkit-scrollbar-thumb,
+#configuracoes::-webkit-scrollbar-thumb,
+#pause-menu::-webkit-scrollbar-thumb,
+#game-over-menu::-webkit-scrollbar-thumb { 
+  background: linear-gradient(45deg, #ff00ff, #00ffff);
+  border-radius: 4px;
+}
+
+/* --- NOVO ESTILO: Botão de ABRIR Configurações --- */
+#config {
+  background-image: url('https://i.imgur.com/vBtYHIG.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+
+  width: 120px;
+  height: 120px;
+  
+  border: none;
+  padding: 0;
+  
+  margin-top: 30px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: absolute;
+  top: 1px;
+  left: 20px;
+}
+
+#config:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+#volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  
+  width: 100%;
+  max-width: 300px;
+  height: 20px;
+  
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+/* --- 1. A Trilha (Track) --- */
+#volume-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* --- 2. O Cursor (Thumb) --- */
+#volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  background: linear-gradient(135deg, #ff00ff, #00ffff);
+  border: 2px solid #fff;
+  border-radius: 3px;
+  
+  box-shadow: 0 0 10px #fff, 
+              0 0 15px #fff, 
+              0 0 20px #0ff, 
+              0 0 25px #f0f;
+  
+  margin-top: -9px;
+  transition: all 0.2s ease;
+}
+
+/* --- 3. Efeitos de Hover/Active --- */
+#volume-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+#volume-slider:active::-webkit-slider-thumb {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #fff, 0 0 15px #fff, 2px 0 20px #f0f, -2px 0 20px #0ff;
+}
+
+#mute-button {
+  background: transparent;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+
+  font-family: 'Consolas', 'Menlo', 'Courier New', monospace; 
+  font-size: 28px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  color: #fff;
+  background: linear-gradient(90deg, #ff00ff 20%, #00ffff 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+
+  transition: all 0.2s ease;
+}
+
+#mute-button:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+  
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5),
+               0 0 10px rgba(255, 0, 255, 0.3),
+               0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Opcional: Efeito Pressionado */
+#mute-button:active {
+    transform: scale(1.05);
+    opacity: 0.6;
+}
+
+
+/* --- BOTÃO DE PAUSE (CORRIGIDO) --- */
+#pause-button {
+  background-image: url('https://i.imgur.com/U7kZCwV.png');
+  
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+
+  width: 140px;
+  height: 140px;
+  
+  border: none;
+  padding: 0;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  position: absolute; 
+  top: 18px;
+  left: 130px; 
+}
+
+#pause-button:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+#high-score-display {
+  font-family: 'Press Start 2P', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  
+  text-shadow:
+    0 0 4px #fff,
+    0 0 10px #ff00ff,
+    0 0 15px #00ffff;
+  
+  width: 100%; 
+  max-height: 400px;
+  
+  padding: 20px; 
+  box-sizing: border-box; 
+  overflow-y: auto; 
+  
+  line-height: 1.9; 
+  text-align: center;
+}
+
+/* --- Barras de Rolagem (Estilo já existente, mantido) --- */
+#high-score-display::-webkit-scrollbar {
+  width: 8px;
+}
+#high-score-display::-webkit-scrollbar-track {
+  background: #001A26;
+  border-radius: 4px;
+}
+#high-score-display::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #ff00ff, #00ffff);
+  border-radius: 4px;
+}
+
+/* --- ESTILO DO INPUT DE NOME --- */
+#player-name-input {
+  font-family: 'Press Start 2P', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  text-align: center;
+  
+  text-shadow:
+    0 0 4px #fff,
+    0 0 10px #ff00ff,
+    0 0 15px #00ffff;
+
+  background: #000;
+  border: 4px solid transparent;
+  border-image: linear-gradient(45deg, #ff00ff, #00ffff) 1;
+  border-radius: 4px;
+  outline: none;
+
+  width: 100%;
+  padding: 15px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+#player-name-input:focus {
+  box-shadow: 
+    inset 0 0 8px rgba(255, 0, 255, 0.6),
+    inset 0 0 12px rgba(0, 255, 255, 0.6);
+}
+
+#player-name-input::placeholder {
+  color: #999;
+  text-shadow: none;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* --- ESTILO DOS CRÉDITOS (PARA OS POP-UPS) --- */
+.credits, 
+.credits-pause {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.credits p, 
+.credits-pause p {
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 1.5rem; 
+    text-align: center;
+    margin-bottom: 25px; 
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-transform: uppercase;
+}
+
+.credits a, 
+.credits-pause a {
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 0.8rem;
+    color: #00ffff;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+}
+
+.credits a:hover, 
+.credits-pause a:hover {
+    color: #ff00ff;
+    transform: scale(1.05);
+    text-shadow: 0 0 10px #ff00ff;
+}
+
+/* --- ESTILO DA LISTA DE CONTROLES (LEGIBILIDADE MELHORADA) --- */
+#instrucoes .controls-list {
+  font-family: 'Consolas', 'Courier New', monospace; /* Fonte mais técnica */
+  font-size: 0.9rem;
+  color: #00ffff; /* Texto ciano */
+  
+  text-shadow: none; /* ANULA o text-shadow herdado de #instrucoes p */
+  
+  background: rgba(0, 0, 0, 0.4); /* Fundo escuro sutil */
+  border: 2px solid rgba(0, 255, 255, 0.3); /* Borda ciano sutil */
+  border-radius: 4px;
+  
+  padding: 20px;
+  line-height: 2;
+  text-align: left;
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
+
+/* Destaca a tecla (ex: "SETA ESQUERDA:") */
+/* Também precisa ser mais específico */
+#instrucoes .controls-list strong {
+  font-weight: bold;
+  color: #ffffff; /* Tecla em branco (alto contraste) */
+  text-shadow: 0 0 5px #fff; /* O brilho neon fica SÓ AQUI */
+}
+
+/* --- ESTILO DA PONTUAÇÃO FINAL NO POPUP --- */
+#game-over-score {
+  font-size: 1.2rem;
+  color: #ffff00; /* Destaque em amarelo */
+  text-shadow: 0 0 10px #ffff00;
+  display: inline-block;
+  margin: 0 5px;
+}
