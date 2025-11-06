@@ -6,7 +6,7 @@ const BLOCK_SIZE = 30;
 // --- ELEMENTOS DO DOM (HTML) ---
 let music, canvas, nextCanvas, scoreCanvas, startButton, timerDisplay, muteButton, volumeSlider, pauseButton, pauseMenu, resumeButton;
 let playerNameInput, highScoreDisplay;
-let gameOverMenu, restartButton; // 
+let gameOverMenu, restartButton;
 
 // --- Variáveis de Contexto 2D ---
 let ctx, nextCtx, scoreCtx;
@@ -21,6 +21,8 @@ const COLORS = [
     '#00ff00', // 5: S (Verde)
     '#8000ff', // 6: T (Roxo)
     '#ff0000', // 7: Z (Vermelho)
+    '#FFFFFF', // 8: P (Pixel Mágico)
+    '#C0C0C0', // 9: A (Arasaka Breaker)
 ];
 
 const TETROMINOS = {
@@ -30,7 +32,9 @@ const TETROMINOS = {
     O: [[4, 4], [4, 4]],
     S: [[0, 5, 5], [5, 5, 0], [0, 0, 0]],
     T: [[0, 6, 0], [6, 6, 6], [0, 0, 0]],
-    Z: [[7, 7, 0], [0, 7, 7], [0, 0, 0]]
+    Z: [[7, 7, 0], [0, 7, 7], [0, 0, 0]],
+    P: [[8]],
+    A: [[9]]
 };
 
 // --- ESTADO DO JOGO (Variáveis Globais) ---
@@ -60,8 +64,17 @@ let lastVolume = 0.3;
 // --- Variáveis de Recorde (High Score) ---
 let highScore = 0;
 let highScoreName = "---";
-let highScoreTime = 0; // Armazena o tempo do recorde
+let highScoreTime = 0;
 let currentPlayerName = "JOGADOR";
+
+// --- Variáveis do Easter Egg ---
+let easterEggSequence = "";
+const EASTER_EGG_CODE = "2077";
+let spawnSpecialBlock = false;
+
+// --- Variáveis para o background personalizado ---
+let arasakaPatternImage = new Image();
+let arasakaPattern = null;
 
 // --- FUNÇÕES DE LÓGICA DO JOGO ---
 
@@ -217,7 +230,38 @@ function playerDrop() {
     player.pos.y++;
     if (collide(board, player)) {
         player.pos.y--;
+        
+        const landedMatrix = player.matrix;
+        const landedPos = player.pos;
+        let wasSpecialBlock = false;
+        
+        landedMatrix.forEach(row => {
+            if (row.includes(9)) {
+                wasSpecialBlock = true;
+            }
+        });
+
         merge(board, player);
+
+        if (wasSpecialBlock) {
+            let bottomRowOfPiece = -1;
+            for (let y = landedMatrix.length - 1; y >= 0; y--) {
+                for (let x = 0; x < landedMatrix[y].length; x++) {
+                    if (landedMatrix[y][x] === 9) {
+                        bottomRowOfPiece = landedPos.y + y;
+                        break; 
+                    }
+                }
+                if (bottomRowOfPiece !== -1) break;
+            }
+
+            if (bottomRowOfPiece !== -1 && bottomRowOfPiece < board.length) {
+                board.splice(bottomRowOfPiece, 1);
+                board.unshift(new Array(COLS).fill(0));
+                player.score += 50;
+            }
+        }
+
         clearLines();
         updateScore();
         spawnPiece();
@@ -225,25 +269,32 @@ function playerDrop() {
     dropCounter = 0;
 }
 
-// ============ CÓDIGO MODIFICADO ABAIXO (spawnPiece) ============
 function spawnPiece() {
-    const types = Object.keys(TETROMINOS);
-    if (player.nextMatrix) {
-        player.matrix = player.nextMatrix;
-    } else {
-        player.matrix = createPiece(types[Math.floor(Math.random() * types.length)]);
+    const types = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
+
+    if (spawnSpecialBlock) {
+        player.matrix = createPiece('A');
+        spawnSpecialBlock = false;
+    } 
+    else { 
+        if (player.nextMatrix) {
+            player.matrix = player.nextMatrix;
+        } else {
+            player.matrix = createPiece(types[Math.floor(Math.random() * types.length)]);
+        }
     }
+    
     player.nextMatrix = createPiece(types[Math.floor(Math.random() * types.length)]);
+
     player.pos.y = 0;
     player.pos.x = (COLS / 2 | 0) - (player.matrix[0].length / 2 | 0);
 
     if (collide(board, player)) {
-        // --- Lógica de Game Over ---
-        checkAndSaveHighScore();
+        checkAndSaveHighScore(); 
         board.forEach(row => row.fill(0));
         player.score = 0;
         updateScore();
-        isPaused = true;
+        isPaused = true; 
         
         if (pauseMenu && pauseMenu.open) {
             pauseMenu.close();
@@ -261,22 +312,17 @@ function spawnPiece() {
         
         if (timerDisplay) timerDisplay.style.display = 'none';
         
-        // --- MODIFICAÇÃO: Habilitar input e mostrar botão Iniciar ---
-        // Habilita o campo de nome e foca nele
         if (playerNameInput) {
             playerNameInput.disabled = false;
-            playerNameInput.focus(); // Foca no campo
-            playerNameInput.select(); // Seleciona o texto atual
+            playerNameInput.focus();
+            playerNameInput.select();
         }
-        // Mostra o botão Iniciar principal novamente
         if (startButton) {
             startButton.style.display = 'flex'; 
         }
-        // --- FIM DA MODIFICAÇÃO ---
         
-        // --- Mostrar popup de Game Over ---
         if (gameOverMenu) {
-            gameOverMenu.showModal(); // Mostra o popup de Fim de Jogo
+            gameOverMenu.showModal();
         }
     }
 }
@@ -288,10 +334,37 @@ function drawMatrix(matrix, offset, context) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                context.fillStyle = COLORS[value];
-                context.shadowColor = COLORS[value];
+                // Se for a peça 'A' (valor 9) E a imagem foi carregada com sucesso
+                if (value === 9 && arasakaPatternImage.complete && arasakaPatternImage.naturalWidth > 0) {
+                    // Desenha a imagem diretamente
+                    // Argumentos: imagem, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight
+                    // Aqui, (x + offset.x) e (y + offset.y) já estão na escala do BLOCK_SIZE
+                    context.drawImage(
+                        arasakaPatternImage,
+                        0, 0, arasakaPatternImage.naturalWidth, arasakaPatternImage.naturalHeight, // Source (toda a imagem)
+                        x + offset.x, y + offset.y, 1, 1 // Destination (um bloco de 1x1 na escala do canvas)
+                    );
+                } else {
+                    // Desenha a cor sólida padrão
+                    context.fillStyle = COLORS[value];
+                    context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                }
+                
+                // Desenha a sombra (se você ainda quiser a sombra com a cor original)
+                context.shadowColor = COLORS[value]; 
                 context.shadowBlur = 20;
-                context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                // Para a sombra, desenhamos um pequeno retângulo por cima da imagem ou cor
+                // Isso garante que a sombra apareça sobre o conteúdo do bloco
+                // Se não quiser sombra em blocos de imagem, remova este if/else
+                if (value === 9 && arasakaPatternImage.complete && arasakaPatternImage.naturalWidth > 0) {
+                    context.fillStyle = 'rgba(0,0,0,0.1)'; // Uma cor escura semi-transparente para a sombra
+                    context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                } else {
+                    // Para blocos de cor, a sombra já é desenhada pelo fillRect principal.
+                    // Podemos redesenhar para garantir, mas o fillRect de cima já faz isso.
+                    // Removendo para evitar sobreposição desnecessária, a menos que a sombra seja um efeito separado
+                }
+
                 context.shadowBlur = 0;
                 context.shadowColor = 'transparent';
             }
@@ -369,7 +442,6 @@ function toggleMute() {
 // --- FUNÇÕES DE PAUSA ---
 
 function pauseGame() {
-    // Caso 1: O jogo está rodando ativamente (!isPaused)
     if (!isPaused) {
         isPaused = true;
         if (music) music.pause();
@@ -378,14 +450,12 @@ function pauseGame() {
         if (pauseMenu) pauseMenu.showModal();
     } 
     else if (isPaused && startButton && startButton.style.display !== 'none') {
-        // Apenas mostre o menu
         if (pauseMenu) pauseMenu.showModal();
     }
 }
 
 
 function resumeGame() {
-    // Se o botão Iniciar NÃO está visível (jogo pausado no meio da partida)
     if (startButton && startButton.style.display === 'none') {
         if (!isPaused) return; 
         isPaused = false;
@@ -401,10 +471,8 @@ function resumeGame() {
         lastFrameTime = performance.now();
         update(lastFrameTime);
     } 
-    // Se o botão Iniciar ESTÁ visível (pausado no menu inicial)
     else {
         if (pauseMenu) pauseMenu.close();
-        // Apenas fecha o menu
     }
 }
 
@@ -433,74 +501,90 @@ function update(time = 0) {
 
 document.addEventListener('keydown', e => {
     
-    // Controle de Pausa (tecla 'p')
-    // É uma boa prática verificar a pausa primeiro
     if (e.key === 'p') {
-        e.preventDefault(); // Previne qualquer ação padrão da tecla 'p'
+        e.preventDefault(); 
         
-        // Se o botão "Iniciar" está escondido (style.display === 'none')
         if (startButton && startButton.style.display === 'none') {
-            togglePause(); // Alterna entre pause e resume
+            togglePause(); 
         } 
-        // Se o botão "Iniciar" NÃO está escondido
         else {
-            pauseGame(); // Apenas chama o menu de pausa
+            pauseGame(); 
         }
-        return; // Já lidamos com a tecla 'p', podemos sair
+        return; 
+    }
+
+    if (!isPaused) {
+        switch (e.key) {
+            case 'ArrowLeft': 
+                e.preventDefault(); 
+                playerMove(-1); 
+                break;
+            case 'ArrowRight': 
+                e.preventDefault(); 
+                playerMove(1); 
+                break;
+            case 'ArrowDown': 
+                e.preventDefault(); 
+                playerDrop(); 
+                break;
+            case 'q': 
+                e.preventDefault(); 
+                playerRotate(-1); 
+                break;
+            case 'w':
+            case 'ArrowUp': 
+                e.preventDefault(); 
+                playerRotate(1); 
+                break;
+            
+            default:
+                if (e.key && e.key.length === 1 && /^[a-zA-Z0-9]$/.test(e.key)) {
+                    easterEggSequence += e.key.toUpperCase();
+                    
+                    if (easterEggSequence.length > EASTER_EGG_CODE.length) {
+                        easterEggSequence = easterEggSequence.substring(easterEggSequence.length - EASTER_EGG_CODE.length);
+                    }
+                    
+                    if (easterEggSequence === EASTER_EGG_CODE) {
+                        console.log("EASTER EGG '2077' ATIVADO!");
+                        spawnSpecialBlock = true;
+                        easterEggSequence = ""; 
+                    }
+                }
+        }
+        return; 
     }
     
-    // Controles do jogo (só funcionam se NÃO estiver pausado)
-    if (isPaused) return; // Se estiver pausado, ignora as teclas de jogo abaixo
-
-    // Lidamos com as teclas de jogo
-    switch (e.key) {
-        case 'ArrowLeft': 
-            e.preventDefault(); 
-            playerMove(-1); 
-            break;
-            
-        case 'ArrowRight': 
-            e.preventDefault(); 
-            playerMove(1); 
-            break;
-            
-        case 'ArrowDown': 
-            e.preventDefault(); 
-            playerDrop(); 
-            break;
-            
-        case 'q': 
-            e.preventDefault(); 
-            playerRotate(-1); 
-            break;
-            
-        case 'w':
-        case 'ArrowUp': 
-            e.preventDefault(); 
-            playerRotate(1); 
-            break;
+    if (e.key && e.key.length === 1 && /^[a-zA-Z0-9]$/.test(e.key)) {
+        easterEggSequence += e.key.toUpperCase();
+        
+        if (easterEggSequence.length > EASTER_EGG_CODE.length) {
+            easterEggSequence = easterEggSequence.substring(easterEggSequence.length - EASTER_EGG_CODE.length);
+        }
+        
+        if (easterEggSequence === EASTER_EGG_CODE) {
+            console.log("EASTER EGG '2077' ATIVADO (no menu)!");
+            spawnSpecialBlock = true;
+            easterEggSequence = ""; 
+        }
     }
 });
 
 
-// ============ CÓDIGO MODIFICADO ABAIXO (startGame) ============
+// --- FUNÇÃO DE INÍCIO DE JOGO ---
 function startGame() {
-    // Verificação de Nome Adicionada
     const rawName = playerNameInput ? playerNameInput.value.trim() : "";
 
     if (rawName === "") {
         alert("Por favor, digite seu nome para iniciar!");
         if (playerNameInput) {
-            playerNameInput.focus(); // Foca no campo de nome
+            playerNameInput.focus();
         }
-        return; // Impede o início do jogo
+        return; 
     }
 
-    // Se o nome for válido, define o nome do jogador
     currentPlayerName = rawName.toUpperCase();
 
-
-    // Código original da função
     if (music && !musicStarted) {
         music.volume = isMuted ? 0 : lastVolume;
         music.play().catch(error => {
@@ -517,13 +601,11 @@ function startGame() {
         pauseMenu.close();
     }
     
-    // MODIFICAÇÃO: Garante que o menu Game Over está fechado
     if (gameOverMenu && gameOverMenu.open) {
         gameOverMenu.close();
     }
-    // FIM DA MODIFICAÇÃO
 
-    if (startButton) startButton.style.display = 'none'; // Esconde o botão Iniciar
+    if (startButton) startButton.style.display = 'none';
     if (timerDisplay) timerDisplay.style.display = 'flex';
     if (playerNameInput) playerNameInput.disabled = true;
 
@@ -537,10 +619,11 @@ function startGame() {
 
     lastFrameTime = performance.now();
     if (!animationFrameId) {
-        spawnPiece(); // Garante que uma nova peça é gerada ao (re)começar
+        spawnPiece();
         update(lastFrameTime);
     }
 }
+
 
 // --- PONTO DE ENTRADA PRINCIPAL ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -561,10 +644,8 @@ document.addEventListener('DOMContentLoaded', () => {
     playerNameInput = document.getElementById('player-name-input');
     highScoreDisplay = document.getElementById('high-score-display');
 
-    // --- MODIFICAÇÃO: Encontrar elementos do popup Game Over ---
     gameOverMenu = document.getElementById('game-over-menu');
     restartButton = document.getElementById('restart-button');
-    // --- FIM DA MODIFICAÇÃO ---
 
 
     // --- 2. INICIALIZAR CONTEXTOS DO CANVAS ---
@@ -608,26 +689,18 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("AVISO: Campo #player-name-input não encontrado.");
     }
 
-    // --- MODIFICAÇÃO: Adicionar listener para o botão Recomeçar ---
     if (restartButton) {
         restartButton.addEventListener('click', () => {
-            // Apenas fecha o menu Game Over
             if (gameOverMenu) gameOverMenu.close();
             
-            // Garante que o foco vá para o input de nome
-            // para que o jogador possa trocá-lo antes de
-            // clicar no botão "Iniciar" principal.
             if (playerNameInput) {
                 playerNameInput.focus();
                 playerNameInput.select();
             }
-            
-            // NÃO chamamos mais startGame() aqui.
         });
     } else {
         console.warn("AVISO: Botão #restart-button (do menu game-over) não encontrado.");
     }
-    // --- FIM DA MODIFICAÇÃO ---
 
     // Seção de Áudio
     if (muteButton) {
@@ -712,6 +785,24 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.warn("AVISO: Botão #config-close-button (para fechar configs) não encontrado.");
     }
+
+    // --- Carregar Imagem do Arasaka e criar padrão ---
+   // --- Carregar Imagem do Arasaka e criar padrão ---
+arasakaPatternImage.src = 'https://i.imgur.com/r23dSjD.png';
+arasakaPatternImage.onload = () => {
+    // Garante que ctx existe antes de tentar criar o padrão
+    if (ctx) { 
+        arasakaPattern = ctx.createPattern(arasakaPatternImage, 'repeat');
+        // Opcional: force um redesenho assim que a imagem carregar
+        // Isso é útil se a imagem carregar após o primeiro draw inicial
+        draw(); 
+    } else {
+        console.error("Contexto do Canvas (ctx) não disponível ao carregar imagem Arasaka.");
+    }
+};
+arasakaPatternImage.onerror = () => {
+    console.error("Erro ao carregar imagem 'arasaka_bg.png'. O bloco Arasaka usará cor sólida.");
+};
 
     // --- 5. ESTADO INICIAL DO JOGO ---
     loadHighScore(); 
